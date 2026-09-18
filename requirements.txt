@@ -1,0 +1,4 @@
+pytest>=7.0
+# All other dependencies use Python stdlib only.
+# Optional for LLM judge:
+# openai>=1.0  (or use the urllib-based built-in client in src/llm_judge.py)

@@ -1,0 +1,69 @@
+{
+  "status": "sample_demonstration",
+  "note": "Full LLM judge requires OPENAI_API_KEY in .env. This file shows the expected output format and a sample of human ratings for comparison. Run `python src/llm_judge.py` after configuring the API key to generate real scores.",
+
+  "rubric": {
+    "dimensions": ["groundedness", "correctness", "relevance", "helpfulness", "tone"],
+    "scale": "1 (very poor) to 5 (excellent)",
+    "judge_model": "gpt-4o-mini (configurable via LLM_JUDGE_MODEL in .env)"
+  },
+
+  "human_ratings_sample": [
+    {
+      "row_index": 0,
+      "tweet_id": "299576",
+      "message": "@AmazonHelp Mais c'est la 4ième fois qu'on me dit que dans 5 jours j'aurai une réponse, ca fait 2 mois",
+      "intent": "other_or_unclear",
+      "expected_action": "ESCALATE",
+      "human_groundedness": 2,
+      "human_correctness": 2,
+      "human_relevance": 3,
+      "human_helpfulness": 2,
+      "human_tone": 4
+    },
+    {
+      "row_index": 6,
+      "tweet_id": "130747",
+      "message": "1/ @115850 Are you guys leaking email ids of user who applied for Amazon BTS offer?",
+      "intent": "other_or_unclear",
+      "expected_action": "ESCALATE",
+      "human_groundedness": 4,
+      "human_correctness": 4,
+      "human_relevance": 4,
+      "human_helpfulness": 4,
+      "human_tone": 5
+    },
+    {
+      "row_index": 11,
+      "tweet_id": "334036",
+      "message": "@195595 @117795 Is it free to #amazonprime accounts?",
+      "intent": "product_or_service",
+      "expected_action": "AUTO",
+      "human_groundedness": 5,
+      "human_correctness": 5,
+      "human_relevance": 5,
+      "human_helpfulness": 5,
+      "human_tone": 5
+    }
+  ],
+
+  "how_agreement_is_measured": {
+    "method": "Pearson correlation coefficient (r)",
+    "computation": "For each of the 5 rating dimensions, we compare the human rating (1-5) with the LLM judge score (1-5) across 35 rows. Pearson r measures linear agreement. r=1.0 means perfect agreement, r=0 means no correlation.",
+    "expected_range": "Literature reports LLM-human agreement of r=0.7–0.9 for GPT-4 class models on structured rubrics (Zheng et al., 2023; Liu et al., 2023).",
+    "code": "See src/llm_judge.py → pearson() function and run_judge() method"
+  },
+
+  "why_deferred": {
+    "reason": "LLM judge requires a paid API key (OPENAI_API_KEY). The infrastructure (rubric, Pearson computation, human ratings) is fully built and tested. To activate: set OPENAI_API_KEY=sk-... in .env and run `python src/llm_judge.py`.",
+    "human_ratings_available": true,
+    "n_human_rated_rows": 35,
+    "n_dimensions": 5,
+    "total_human_scores": 175
+  },
+
+  "citations": [
+    "Zheng et al. (2023). Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. NeurIPS 2023.",
+    "Liu et al. (2023). G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment. EMNLP 2023."
+  ]
+}

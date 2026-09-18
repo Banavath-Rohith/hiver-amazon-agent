@@ -1,0 +1,33 @@
+# Secrets
+.env
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Large raw datasets (do not commit 2.5 GB files)
+data/raw/twcs.csv
+
+# Large auto-generated files (reproducible from src/prepare_cases.py)
+data/processed/amazon_cases.csv
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Pytest cache
+.pytest_cache/
