@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AmazonHelp AI Agent — Hiver SDE Intern Demo</title>
+  <meta name="description" content="Interactive preview of the AmazonHelp AI customer-support agent: intent classification, evidence retrieval, reply generation, and escalation decision." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <!-- ═══════ NAVBAR ═══════ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-brand">
+      <span class="nav-logo">⚡</span>
+      <span class="nav-title">AmazonHelp AI Agent</span>
+      <span class="nav-badge">Hiver SDE Intern</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn active" data-tab="playground" id="tab-playground">Playground</button>
+      <button class="tab-btn" data-tab="metrics" id="tab-metrics">Metrics</button>
+      <button class="tab-btn" data-tab="golden" id="tab-golden">Golden Set</button>
+      <button class="tab-btn" data-tab="failures" id="tab-failures">Failures</button>
+    </div>
+  </nav>
+
+  <!-- ═══════ HERO ═══════ -->
+  <section class="hero" id="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <div class="hero-tag">Customer Support Intelligence</div>
+      <h1 class="hero-title">AmazonHelp<br/><span class="gradient-text">AI Support Agent</span></h1>
+      <p class="hero-desc">
+        Zero-dependency Python agent that classifies customer intents, retrieves historical evidence, drafts grounded replies, and decides when to escalate — all from real Twitter data.
+      </p>
+      <div class="hero-stats">
+        <div class="stat-pill"><span class="stat-num" id="stat-accuracy">93.5%</span><span class="stat-label">Intent Accuracy</span></div>
+        <div class="stat-pill"><span class="stat-num" id="stat-f1">91.2%</span><span class="stat-label">Macro F1</span></div>
+        <div class="stat-pill"><span class="stat-num" id="stat-esc">0.0%</span><span class="stat-label">False Escalations</span></div>
+        <div class="stat-pill"><span class="stat-num">60k+</span><span class="stat-label">Training Cases</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════ MAIN ═══════ -->
+  <main class="main-content">
+
+    <!-- ── PLAYGROUND TAB ── -->
+    <section class="tab-panel active" id="panel-playground">
+
+      <div class="panel-header">
+        <h2>Live Agent Playground</h2>
+        <p>Type a customer tweet and watch the full pipeline execute in real-time.</p>
+      </div>
+
+      <!-- Preset messages -->
+      <div class="presets">
+        <span class="presets-label">Quick examples:</span>
+        <button class="preset-btn" data-msg="@AmazonHelp My order hasn't arrived after 10 days, tracking shows it's stuck">📦 Delivery Delay</button>
+        <button class="preset-btn" data-msg="@AmazonHelp I can't log into my account, the password reset email never arrived">🔑 Login Issue</button>
+        <button class="preset-btn" data-msg="@AmazonHelp I was charged twice for the same order and need a refund">💳 Double Charge</button>
+        <button class="preset-btn" data-msg="@AmazonHelp the Amazon app keeps crashing every time I open it">📱 App Crash</button>
+        <button class="preset-btn" data-msg="@AmazonHelp the Kindle I received is broken and won't turn on">📖 Damaged Device</button>
+        <button class="preset-btn" data-msg="où est ma commande ? @AmazonHelp">🌍 Non-English</button>
+      </div>
+
+      <!-- Input -->
+      <div class="input-card">
+        <label class="input-label" for="msg-input">Customer Message</label>
+        <div class="input-wrapper">
+          <textarea id="msg-input" class="msg-input" placeholder="@AmazonHelp my package hasn't arrived..." rows="3" maxlength="280"></textarea>
+          <span class="char-count" id="char-count">0/280</span>
+        </div>
+        <button class="btn-analyze" id="btn-analyze">
+          <span class="btn-text">Analyze Message</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-bar" id="loading-bar">
+        <div class="loading-fill"></div>
+      </div>
+
+      <!-- Pipeline Steps -->
+      <div class="pipeline" id="pipeline" style="display:none">
+
+        <!-- Step 1: Intent -->
+        <div class="pipeline-step" id="step-intent">
+          <div class="step-header">
+            <div class="step-num">1</div>
+            <div class="step-info">
+              <div class="step-title">Intent Classification</div>
+              <div class="step-subtitle">Keyword multi-cue scoring with confidence normalisation</div>
+            </div>
+            <div class="step-badge intent-badge" id="intent-badge">—</div>
+          </div>
+          <div class="step-body">
+            <div class="metric-row">
+              <span class="metric-label">Confidence</span>
+              <div class="confidence-bar"><div class="confidence-fill" id="confidence-fill"></div></div>
+              <span class="metric-val" id="confidence-val">—</span>
+            </div>
+            <div class="metric-row" id="triggered-row">
+              <span class="metric-label">Keywords</span>
+              <div class="keyword-chips" id="keyword-chips"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Evidence -->
+        <div class="pipeline-step" id="step-evidence">
+          <div class="step-header">
+            <div class="step-num">2</div>
+            <div class="step-info">
+              <div class="step-title">Historical Evidence Retrieval</div>
+              <div class="step-subtitle">Jaccard similarity over 60,474 AmazonHelp cases</div>
+            </div>
+            <div class="step-badge" id="evidence-count-badge">— cases</div>
+          </div>
+          <div class="step-body" id="evidence-cards"></div>
+        </div>
+
+        <!-- Step 3: Reply -->
+        <div class="pipeline-step" id="step-reply">
+          <div class="step-header">
+            <div class="step-num">3</div>
+            <div class="step-info">
+              <div class="step-title">Reply Generation</div>
+              <div class="step-subtitle">Evidence-grounded verbatim response (no hallucination)</div>
+            </div>
+          </div>
+          <div class="step-body">
+            <div class="reply-box" id="reply-box"></div>
+          </div>
+        </div>
+
+        <!-- Step 4: Escalation -->
+        <div class="pipeline-step" id="step-escalation">
+          <div class="step-header">
+            <div class="step-num">4</div>
+            <div class="step-info">
+              <div class="step-title">Escalation Decision</div>
+              <div class="step-subtitle">6-rule conservative safety check</div>
+            </div>
+            <div class="step-badge action-badge" id="action-badge">—</div>
+          </div>
+          <div class="step-body">
+            <div class="reason-box" id="reason-box"></div>
+          </div>
+        </div>
+
+      </div><!-- /pipeline -->
+    </section><!-- /playground -->
+
+
+    <!-- ── METRICS TAB ── -->
+    <section class="tab-panel" id="panel-metrics">
+      <div class="panel-header">
+        <h2>Evaluation Metrics</h2>
+        <p>Real benchmark results on 200 human-labeled golden-set examples. Computed by running the code — never hard-coded.</p>
+      </div>
+
+      <div class="metrics-grid">
+        <!-- Comparison table -->
+        <div class="card full-width">
+          <h3 class="card-title">Baseline vs AI Agent Comparison</h3>
+          <div class="table-wrap">
+            <table class="metrics-table" id="comparison-table">
+              <thead>
+                <tr><th>Metric</th><th>Trivial Baseline</th><th>TF-IDF 1-NN</th><th class="highlight-col">AI Agent</th></tr>
+              </thead>
+              <tbody id="comparison-tbody">
+                <tr><td colspan="4" class="loading-cell">Loading metrics...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Per-class F1 bars -->
+        <div class="card">
+          <h3 class="card-title">Per-Intent F1 Score (AI Agent)</h3>
+          <div class="bar-chart" id="per-class-chart"></div>
+        </div>
+
+        <!-- Escalation breakdown -->
+        <div class="card">
+          <h3 class="card-title">Escalation Decision Breakdown</h3>
+          <div class="esc-grid" id="esc-grid"></div>
+        </div>
+
+        <!-- Confusion matrix -->
+        <div class="card full-width">
+          <h3 class="card-title">Confusion Matrix (AI Agent, n=200)</h3>
+          <div class="cm-wrap" id="confusion-matrix"></div>
+        </div>
+      </div>
+    </section><!-- /metrics -->
+
+
+    <!-- ── GOLDEN SET TAB ── -->
+    <section class="tab-panel" id="panel-golden">
+      <div class="panel-header">
+        <h2>Golden Evaluation Set</h2>
+        <p>200 real AmazonHelp customer messages with human-assigned intent and escalation labels. Browse, filter, and search.</p>
+      </div>
+
+      <div class="golden-controls">
+        <input type="text" class="search-input" id="golden-search" placeholder="Search messages..." />
+        <select class="filter-select" id="golden-intent-filter">
+          <option value="">All intents</option>
+          <option value="delivery_or_order">delivery_or_order</option>
+          <option value="account_or_login">account_or_login</option>
+          <option value="payment_or_refund">payment_or_refund</option>
+          <option value="product_or_service">product_or_service</option>
+          <option value="technical_issue">technical_issue</option>
+          <option value="other_or_unclear">other_or_unclear</option>
+        </select>
+        <select class="filter-select" id="golden-action-filter">
+          <option value="">All actions</option>
+          <option value="AUTO">AUTO</option>
+          <option value="ESCALATE">ESCALATE</option>
+        </select>
+        <span class="result-count" id="golden-count">— rows</span>
+      </div>
+
+      <div class="golden-table-wrap">
+        <table class="golden-table" id="golden-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Message</th>
+              <th>Intent</th>
+              <th>Action</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="golden-tbody">
+            <tr><td colspan="5" class="loading-cell">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section><!-- /golden -->
+
+
+    <!-- ── FAILURES TAB ── -->
+    <section class="tab-panel" id="panel-failures">
+      <div class="panel-header">
+        <h2>Failure Analysis</h2>
+        <p>Top 5 real failure modes identified from the 200-sample evaluation. Each failure includes the actual message, expected vs actual behaviour, and a root-cause hypothesis.</p>
+      </div>
+      <div class="failure-cards" id="failure-cards">
+        <div class="loading-cell">Loading...</div>
+      </div>
+    </section><!-- /failures -->
+
+  </main>
+
+  <!-- ═══════ FOOTER ═══════ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>Built for <strong>Hiver SDE Intern Take-Home Assignment</strong></span>
+      <span class="footer-sep">·</span>
+      <span>AmazonHelp dataset from TWCS (Kaggle)</span>
+      <span class="footer-sep">·</span>
+      <span>Zero external ML dependencies</span>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
